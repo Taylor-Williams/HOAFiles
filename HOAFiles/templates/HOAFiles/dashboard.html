@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOAFiles - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        
+        .header .user-info {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .header .logout-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .header .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .hoa-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .house-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .card-count {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .empty-state-text {
+            font-size: 16px;
+        }
+        
+        .item-list {
+            list-style: none;
+        }
+        
+        .item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .item-detail {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .item-detail strong {
+            color: #333;
+        }
+        
+        .refresh-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .search-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .search-results {
+            margin-top: 20px;
+        }
+
+        .search-results.hidden {
+            display: none;
+        }
+
+        .result-item {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #11998e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .result-item:hover {
+            background: #e9ecef;
+        }
+
+        .result-info {
+            flex: 1;
+        }
+
+        .result-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-owner {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .join-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .join-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .join-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .role-badge.member {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header .logout-btn {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>HOAFiles Dashboard</h1>
+                <div class="user-info">
+                    <strong>Email:</strong> {{ user.email }}
+                </div>
+            </div>
+            <a href="/" class="logout-btn">Back to Login</a>
+        </div>
+
+        <!-- Create HOA Group Section -->
+        <div class="search-section">
+            <div class="search-header">
+                <div class="search-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">➕</div>
+                <div class="search-title">Create an HOA Group</div>
+            </div>
+            <div class="search-container">
+                <input type="text" id="createHoaName" class="search-input" placeholder="Enter HOA group name...">
+                <button id="createHoaBtn" class="search-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Create</button>
+            </div>
+            <div id="createMessage"></div>
+        </div>
+
+        <!-- Search HOA Groups Section -->
+        <div class="search-section">
+            <div class="search-header">
+                <div class="search-icon">🔍</div>
+                <div class="search-title">Join an HOA Group</div>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for HOA groups by name...">
+                <button id="searchBtn" class="search-btn">Search</button>
+            </div>
+            <div id="searchResults" class="search-results hidden"></div>
+            <div id="searchMessage"></div>
+        </div>
+
+        <div class="content-grid">
+            <!-- HOA Groups Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon hoa-icon">🏘️</div>
+                    <div>
+                        <div class="card-title">HOA Groups</div>
+                        <div class="card-count">{{ hoa_groups|length }} group{{ hoa_groups|length|pluralize }}</div>
+                    </div>
+                </div>
+                
+                {% if hoa_groups %}
+                    <ul class="item-list">
+                        {% for group in hoa_groups %}
+                        <li class="item" style="cursor: pointer;" onclick="window.location.href='/hoa-group/{{ group.id }}/dashboard/?user_id={{ user.id }}'">
+                            <div class="item-title">
+                                {{ group.name }}
+                                <span class="role-badge {{ group.role }}">{{ group.role }}</span>
+                            </div>
+                            <div class="item-detail">
+                                <strong>Owner Email:</strong> {{ group.owner_email }}
+                            </div>
+                            <div class="item-detail" style="color: #667eea; margin-top: 10px;">Click to view dashboard &rarr;</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏘️</div>
+                        <div class="empty-state-text">No HOA groups found</div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Houses Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon house-icon">🏠</div>
+                    <div>
+                        <div class="card-title">Houses</div>
+                        <div class="card-count">{{ houses|length }} house{{ houses|length|pluralize }}</div>
+                    </div>
+                </div>
+                
+                {% if houses %}
+                    <ul class="item-list">
+                        {% for house in houses %}
+                        <li class="item">
+                            <div class="item-title">{{ house.address }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏠</div>
+                        <div class="empty-state-text">No houses found</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <button class="refresh-btn" onclick="location.reload()">🔄 Refresh Data</button>
+    </div>
+    
+    <script>
+        // Store user info
+        const userId = {{ user.id }};
+        localStorage.setItem('userEmail', '{{ user.email }}');
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        const searchMessage = document.getElementById('searchMessage');
+        const createHoaName = document.getElementById('createHoaName');
+        const createHoaBtn = document.getElementById('createHoaBtn');
+        const createMessage = document.getElementById('createMessage');
+
+        // Create HOA Group functionality
+        async function createHOAGroup() {
+            const name = createHoaName.value.trim();
+            if (!name) {
+                showCreateMessage('Please enter a group name', 'error');
+                return;
+            }
+
+            createHoaBtn.disabled = true;
+            createHoaBtn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`/api/users/${userId}/hoa-groups/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        owner_email: '{{ user.email }}'
+                    })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showCreateMessage(`Successfully created "${data.name}"!`, 'success');
+                    createHoaName.value = '';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showCreateMessage(data.error || 'Failed to create group', 'error');
+                    createHoaBtn.disabled = false;
+                    createHoaBtn.textContent = 'Create';
+                }
+            } catch (error) {
+                showCreateMessage('An error occurred while creating the group', 'error');
+                createHoaBtn.disabled = false;
+                createHoaBtn.textContent = 'Create';
+            }
+        }
+
+        function showCreateMessage(text, type) {
+            createMessage.innerHTML = `<div class="message ${type}">${escapeHtml(text)}</div>`;
+            setTimeout(() => {
+                createMessage.innerHTML = '';
+            }, 5000);
+        }
+
+        // Search functionality
+        async function searchHOAGroups() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}/hoa-groups/search/?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data.hoa_groups);
+                } else {
+                    showMessage(data.error || 'Search failed', 'error');
+                }
+            } catch (error) {
+                showMessage('An error occurred while searching', 'error');
+            }
+        }
+
+        // Display search results
+        function displayResults(hoaGroups) {
+            searchResults.classList.remove('hidden');
+
+            if (hoaGroups.length === 0) {
+                searchResults.innerHTML = '<div class="no-results">No HOA groups found matching your search</div>';
+                return;
+            }
+
+            searchResults.innerHTML = hoaGroups.map(group => `
+                <div class="result-item" data-id="${group.id}">
+                    <div class="result-info">
+                        <div class="result-name">${escapeHtml(group.name)}</div>
+                        <div class="result-owner">Owner: ${escapeHtml(group.owner_email)}</div>
+                    </div>
+                    <button class="join-btn" onclick="joinHOAGroup(${group.id}, this)">Join</button>
+                </div>
+            `).join('');
+        }
+
+        // Join HOA group
+        async function joinHOAGroup(hoaGroupId, button) {
+            button.disabled = true;
+            button.textContent = 'Joining...';
+
+            try {
+                const response = await fetch(`/api/users/${userId}/hoa-groups/${hoaGroupId}/join/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`Successfully joined "${data.name}"!`, 'success');
+                    // Remove the joined group from results
+                    const resultItem = button.closest('.result-item');
+                    resultItem.remove();
+                    // Reload page after short delay to show updated groups
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error || 'Failed to join group', 'error');
+                    button.disabled = false;
+                    button.textContent = 'Join';
+                }
+            } catch (error) {
+                showMessage('An error occurred while joining', 'error');
+                button.disabled = false;
+                button.textContent = 'Join';
+            }
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            searchMessage.innerHTML = `<div class="message ${type}">${escapeHtml(text)}</div>`;
+            setTimeout(() => {
+                searchMessage.innerHTML = '';
+            }, 5000);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners
+        createHoaBtn.addEventListener('click', createHOAGroup);
+        createHoaName.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                createHOAGroup();
+            }
+        });
+
+        searchBtn.addEventListener('click', searchHOAGroups);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchHOAGroups();
+            }
+        });
+    </script>
+</body>
+</html>
+
