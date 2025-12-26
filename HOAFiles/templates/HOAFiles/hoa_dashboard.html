@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hoa_group.name }} - HOAFiles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header .group-info {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .header .back-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .doc-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .member-icon {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .card-count {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+
+        .item-list {
+            list-style: none;
+        }
+
+        .item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .item:hover {
+            background: #e9ecef;
+        }
+
+        .item-content {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .item-content:hover .item-title {
+            color: #667eea;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .item-detail {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .item-detail strong {
+            color: #333;
+        }
+
+        .delete-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 90, 90, 0.4);
+        }
+
+        .create-section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .create-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .create-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .create-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .create-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cancel-btn {
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cancel-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .member-item {
+            border-left-color: #11998e;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .role-badge.member {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header .back-btn {
+                margin-top: 15px;
+            }
+
+            .item {
+                flex-direction: column;
+            }
+
+            .delete-btn {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>{{ hoa_group.name }}</h1>
+                <div class="group-info">
+                    <strong>Owner:</strong> {{ hoa_group.owner_email }}
+                </div>
+            </div>
+            <a href="javascript:history.back()" class="back-btn">Back to Dashboard</a>
+        </div>
+
+        {% if is_admin %}
+        <!-- Create/Edit Document Section (Admin Only) -->
+        <div class="create-section" id="documentSection">
+            <div class="create-header">
+                <div class="create-icon" id="sectionIcon">+</div>
+                <div class="create-title" id="sectionTitle">Create New Document</div>
+            </div>
+            <div class="form-group">
+                <input type="text" id="docTitle" class="form-input" placeholder="Document title...">
+            </div>
+            <div class="form-group">
+                <textarea id="docContent" class="form-textarea" placeholder="Document content..."></textarea>
+            </div>
+            <div class="btn-group">
+                <button id="createDocBtn" class="create-btn">Create Document</button>
+                <button id="cancelEditBtn" class="cancel-btn" style="display: none;">Cancel</button>
+            </div>
+            <div id="createMessage"></div>
+        </div>
+        {% endif %}
+
+        <div class="content-grid">
+            <!-- Documents Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon doc-icon">&#128196;</div>
+                    <div>
+                        <div class="card-title">Documents</div>
+                        <div class="card-count">{{ documents|length }} document{{ documents|length|pluralize }}</div>
+                    </div>
+                </div>
+
+                {% if documents %}
+                    <ul class="item-list" id="documentList">
+                        {% for doc in documents %}
+                        <li class="item" data-id="{{ doc.id }}" data-title="{{ doc.title }}" data-content="{{ doc.content }}">
+                            <div class="item-content" {% if is_admin %}onclick="editDocument({{ doc.id }})"{% endif %}>
+                                <div class="item-title">{{ doc.title }}</div>
+                                <div class="item-detail">{{ doc.content|truncatewords:30 }}</div>
+                                <div class="item-detail">
+                                    <strong>Created:</strong> {{ doc.created_at|date:"M d, Y H:i" }}
+                                </div>
+                            </div>
+                            {% if is_admin %}
+                            <button class="delete-btn" onclick="deleteDocument({{ doc.id }}, this)">Delete</button>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state" id="emptyDocState">
+                        <div class="empty-state-icon">&#128196;</div>
+                        <div class="empty-state-text">No documents yet</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Members Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon member-icon">&#128101;</div>
+                    <div>
+                        <div class="card-title">Members</div>
+                        <div class="card-count">{{ memberships|length }} member{{ memberships|length|pluralize }}</div>
+                    </div>
+                </div>
+
+                {% if memberships %}
+                    <ul class="item-list">
+                        {% for membership in memberships %}
+                        <li class="item member-item">
+                            <div class="item-content">
+                                <div class="item-title">
+                                    {{ membership.user.email }}
+                                    <span class="role-badge {{ membership.role }}">{{ membership.role }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">&#128101;</div>
+                        <div class="empty-state-text">No members</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="location.reload()">Refresh Data</button>
+    </div>
+
+    <script>
+        const hoaGroupId = {{ hoa_group.id }};
+        const isAdmin = {{ is_admin|yesno:"true,false" }};
+        const currentUserId = {% if current_user %}{{ current_user.id }}{% else %}null{% endif %};
+
+        // DOM elements (only available for admins)
+        const docTitle = document.getElementById('docTitle');
+        const docContent = document.getElementById('docContent');
+        const createDocBtn = document.getElementById('createDocBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const createMessage = document.getElementById('createMessage');
+        const sectionIcon = document.getElementById('sectionIcon');
+        const sectionTitle = document.getElementById('sectionTitle');
+
+        // Edit mode state
+        let editingDocumentId = null;
+
+        // Edit document - switch to edit mode
+        function editDocument(documentId) {
+            const docItem = document.querySelector(`.item[data-id="${documentId}"]`);
+            if (!docItem) return;
+
+            const title = docItem.dataset.title;
+            const content = docItem.dataset.content;
+
+            // Switch to edit mode
+            editingDocumentId = documentId;
+            docTitle.value = title;
+            docContent.value = content;
+            sectionIcon.textContent = '✎';
+            sectionTitle.textContent = 'Edit Document';
+            createDocBtn.textContent = 'Save Changes';
+            cancelEditBtn.style.display = 'inline-block';
+
+            // Scroll to the edit section
+            document.getElementById('documentSection').scrollIntoView({ behavior: 'smooth' });
+            docTitle.focus();
+        }
+
+        // Cancel edit - switch back to create mode
+        function cancelEdit() {
+            editingDocumentId = null;
+            docTitle.value = '';
+            docContent.value = '';
+            sectionIcon.textContent = '+';
+            sectionTitle.textContent = 'Create New Document';
+            createDocBtn.textContent = 'Create Document';
+            cancelEditBtn.style.display = 'none';
+            createMessage.innerHTML = '';
+        }
+
+        // Update document
+        async function updateDocument() {
+            const title = docTitle.value.trim();
+            const content = docContent.value.trim();
+
+            if (!title) {
+                showMessage('Please enter a document title', 'error');
+                return;
+            }
+
+            createDocBtn.disabled = true;
+            createDocBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`/api/hoa-groups/${hoaGroupId}/documents/${editingDocumentId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        user_id: currentUserId
+                    })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`Document "${data.title}" updated successfully!`, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error || 'Failed to update document', 'error');
+                    createDocBtn.disabled = false;
+                    createDocBtn.textContent = 'Save Changes';
+                }
+            } catch (error) {
+                showMessage('An error occurred while updating the document', 'error');
+                createDocBtn.disabled = false;
+                createDocBtn.textContent = 'Save Changes';
+            }
+        }
+
+        // Create document
+        async function createDocument() {
+            const title = docTitle.value.trim();
+            const content = docContent.value.trim();
+
+            if (!title) {
+                showMessage('Please enter a document title', 'error');
+                return;
+            }
+
+            createDocBtn.disabled = true;
+            createDocBtn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`/api/hoa-groups/${hoaGroupId}/documents/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        user_id: currentUserId
+                    })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`Document "${data.title}" created successfully!`, 'success');
+                    docTitle.value = '';
+                    docContent.value = '';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error || 'Failed to create document', 'error');
+                    createDocBtn.disabled = false;
+                    createDocBtn.textContent = 'Create Document';
+                }
+            } catch (error) {
+                showMessage('An error occurred while creating the document', 'error');
+                createDocBtn.disabled = false;
+                createDocBtn.textContent = 'Create Document';
+            }
+        }
+
+        // Delete document
+        async function deleteDocument(documentId, button) {
+            if (!confirm('Are you sure you want to delete this document?')) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Deleting...';
+
+            try {
+                const response = await fetch(`/api/hoa-groups/${hoaGroupId}/documents/${documentId}/?user_id=${currentUserId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const item = button.closest('.item');
+                    item.remove();
+
+                    // Check if list is empty
+                    const documentList = document.getElementById('documentList');
+                    if (documentList && documentList.children.length === 0) {
+                        documentList.remove();
+                        const card = document.querySelector('.card');
+                        const emptyState = document.createElement('div');
+                        emptyState.className = 'empty-state';
+                        emptyState.innerHTML = '<div class="empty-state-icon">&#128196;</div><div class="empty-state-text">No documents yet</div>';
+                        card.appendChild(emptyState);
+                    }
+                } else {
+                    showMessage(data.error || 'Failed to delete document', 'error');
+                    button.disabled = false;
+                    button.textContent = 'Delete';
+                }
+            } catch (error) {
+                showMessage('An error occurred while deleting the document', 'error');
+                button.disabled = false;
+                button.textContent = 'Delete';
+            }
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            createMessage.innerHTML = `<div class="message ${type}">${escapeHtml(text)}</div>`;
+            setTimeout(() => {
+                createMessage.innerHTML = '';
+            }, 5000);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle create/update button click
+        function handleSubmit() {
+            if (editingDocumentId) {
+                updateDocument();
+            } else {
+                createDocument();
+            }
+        }
+
+        // Event listeners
+        createDocBtn.addEventListener('click', handleSubmit);
+        cancelEditBtn.addEventListener('click', cancelEdit);
+        docTitle.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+    </script>
+</body>
+</html>
