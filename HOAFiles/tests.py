@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from HOAFiles.models import User, HOAGroup, House
+from HOAFiles.models import User, HOAGroup, House, HOAMembership
 import sys
 
 
@@ -400,4 +400,194 @@ class ModelRelationshipsTest(TestCase):
         self.assertEqual(user2.hoa_groups.count(), 1)
         self.assertEqual(user2.houses.count(), 0)
         self._notify_success("Complex relationships: Successfully tested intricate many-to-many relationships across all three models")
+
+
+class HOAMembershipModelTest(TestCase):
+    """Test suite for the HOAMembership model"""
+
+    def setUp(self):
+        """Set up test data"""
+        self.owner = User(email='owner@example.com', username='owner')
+        self.owner.set_password('password123')
+        self.owner.save()
+
+        self.user1 = User(email='user1@example.com', username='user1')
+        self.user1.set_password('password123')
+        self.user1.save()
+
+        self.user2 = User(email='user2@example.com', username='user2')
+        self.user2.set_password('password123')
+        self.user2.save()
+
+        self.hoa_group = HOAGroup(name='Test HOA', owner_email='owner@example.com')
+        self.hoa_group.save()
+
+    def _notify_success(self, message):
+        """Print a success notification"""
+        print(f"\n✓ PASSED: {message}", file=sys.stderr)
+
+    def test_membership_creation_with_default_role(self):
+        """Test creating a membership with default 'member' role"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership.save()
+
+        self.assertEqual(membership.user, self.user1)
+        self.assertEqual(membership.hoa_group, self.hoa_group)
+        self.assertEqual(membership.role, 'member')
+        self.assertIsNotNone(membership.joined_at)
+        self._notify_success("Membership creation: Successfully created membership with default 'member' role")
+
+    def test_membership_creation_with_admin_role(self):
+        """Test creating a membership with 'admin' role"""
+        membership = HOAMembership(user=self.owner, hoa_group=self.hoa_group, role='admin')
+        membership.save()
+
+        self.assertEqual(membership.role, 'admin')
+        self._notify_success("Admin membership: Successfully created membership with 'admin' role")
+
+    def test_membership_joined_at_auto_set(self):
+        """Test that joined_at is automatically set on creation"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership.save()
+
+        self.assertIsNotNone(membership.joined_at)
+        self._notify_success("Auto timestamp: Verified joined_at is automatically set on creation")
+
+    def test_membership_str_method(self):
+        """Test the __str__ method returns proper format"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group, role='member')
+        membership.save()
+
+        expected_str = f"{self.user1.email} - {self.hoa_group.name} (member)"
+        self.assertEqual(str(membership), expected_str)
+        self._notify_success("String representation: Verified __str__() returns 'email - group_name (role)' format")
+
+    def test_membership_unique_together_constraint(self):
+        """Test that a user can only have one membership per HOA group"""
+        membership1 = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership1.save()
+
+        # Try to create another membership for the same user in the same group
+        membership2 = HOAMembership(user=self.user1, hoa_group=self.hoa_group, role='admin')
+
+        with self.assertRaises(IntegrityError):
+            membership2.save()
+        self._notify_success("Unique constraint: Confirmed user can only have one membership per HOA group")
+
+    def test_membership_user_required(self):
+        """Test that user field is required"""
+        membership = HOAMembership(hoa_group=self.hoa_group)
+
+        with self.assertRaises(IntegrityError):
+            membership.save()
+        self._notify_success("Field validation: Confirmed that user field is required")
+
+    def test_membership_hoa_group_required(self):
+        """Test that hoa_group field is required"""
+        membership = HOAMembership(user=self.user1)
+
+        with self.assertRaises(IntegrityError):
+            membership.save()
+        self._notify_success("Field validation: Confirmed that hoa_group field is required")
+
+    def test_membership_cascade_delete_user(self):
+        """Test that membership is deleted when user is deleted"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership.save()
+        membership_id = membership.id
+
+        self.user1.delete()
+
+        self.assertFalse(HOAMembership.objects.filter(id=membership_id).exists())
+        self._notify_success("Cascade delete: Verified membership is deleted when user is deleted")
+
+    def test_membership_cascade_delete_hoa_group(self):
+        """Test that membership is deleted when HOA group is deleted"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership.save()
+        membership_id = membership.id
+
+        self.hoa_group.delete()
+
+        self.assertFalse(HOAMembership.objects.filter(id=membership_id).exists())
+        self._notify_success("Cascade delete: Verified membership is deleted when HOA group is deleted")
+
+    def test_user_can_have_multiple_memberships(self):
+        """Test that a user can be a member of multiple HOA groups"""
+        hoa_group2 = HOAGroup(name='Second HOA', owner_email='owner2@example.com')
+        hoa_group2.save()
+
+        membership1 = HOAMembership(user=self.user1, hoa_group=self.hoa_group)
+        membership1.save()
+        membership2 = HOAMembership(user=self.user1, hoa_group=hoa_group2)
+        membership2.save()
+
+        self.assertEqual(self.user1.hoa_memberships.count(), 2)
+        self._notify_success("Multiple memberships: Verified user can belong to multiple HOA groups")
+
+    def test_hoa_group_can_have_multiple_members(self):
+        """Test that an HOA group can have multiple members"""
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+        HOAMembership.objects.create(user=self.user2, hoa_group=self.hoa_group, role='member')
+        HOAMembership.objects.create(user=self.owner, hoa_group=self.hoa_group, role='admin')
+
+        self.assertEqual(self.hoa_group.memberships.count(), 3)
+        self._notify_success("Multiple members: Verified HOA group can have multiple members")
+
+    def test_hoa_group_is_admin_method(self):
+        """Test the is_admin() method on HOAGroup"""
+        HOAMembership.objects.create(user=self.owner, hoa_group=self.hoa_group, role='admin')
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+
+        self.assertTrue(self.hoa_group.is_admin(self.owner))
+        self.assertFalse(self.hoa_group.is_admin(self.user1))
+        self.assertFalse(self.hoa_group.is_admin(self.user2))  # Not a member at all
+        self._notify_success("is_admin method: Verified HOAGroup.is_admin() correctly identifies admin users")
+
+    def test_hoa_group_get_user_role_method(self):
+        """Test the get_user_role() method on HOAGroup"""
+        HOAMembership.objects.create(user=self.owner, hoa_group=self.hoa_group, role='admin')
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+
+        self.assertEqual(self.hoa_group.get_user_role(self.owner), 'admin')
+        self.assertEqual(self.hoa_group.get_user_role(self.user1), 'member')
+        self.assertIsNone(self.hoa_group.get_user_role(self.user2))  # Not a member
+        self._notify_success("get_user_role method: Verified HOAGroup.get_user_role() returns correct role or None")
+
+    def test_membership_related_name_from_user(self):
+        """Test accessing memberships from user via related_name"""
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+
+        user = User.objects.get(email=self.user1.email)
+        self.assertEqual(user.hoa_memberships.count(), 1)
+        self.assertEqual(user.hoa_memberships.first().hoa_group, self.hoa_group)
+        self._notify_success("Related name (user): Verified accessing memberships via user.hoa_memberships")
+
+    def test_membership_related_name_from_hoa_group(self):
+        """Test accessing memberships from HOA group via related_name"""
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+
+        group = HOAGroup.objects.get(name=self.hoa_group.name)
+        self.assertEqual(group.memberships.count(), 1)
+        self.assertEqual(group.memberships.first().user, self.user1)
+        self._notify_success("Related name (group): Verified accessing memberships via hoa_group.memberships")
+
+    def test_membership_role_choices(self):
+        """Test that role field only accepts valid choices"""
+        membership = HOAMembership(user=self.user1, hoa_group=self.hoa_group, role='invalid_role')
+
+        with self.assertRaises(ValidationError):
+            membership.full_clean()
+        self._notify_success("Role validation: Confirmed that role field only accepts 'admin' or 'member'")
+
+    def test_membership_select_related_optimization(self):
+        """Test that select_related works correctly for membership queries"""
+        HOAMembership.objects.create(user=self.user1, hoa_group=self.hoa_group, role='member')
+
+        # This should not raise any errors and should return the membership with related objects
+        membership = HOAMembership.objects.select_related('user', 'hoa_group').first()
+
+        self.assertEqual(membership.user.email, self.user1.email)
+        self.assertEqual(membership.hoa_group.name, self.hoa_group.name)
+        self._notify_success("Query optimization: Verified select_related works correctly with membership queries")
 
